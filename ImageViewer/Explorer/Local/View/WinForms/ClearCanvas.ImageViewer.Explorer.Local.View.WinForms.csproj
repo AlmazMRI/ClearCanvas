@@ -140,6 +140,10 @@
       <Project>{85100D3E-471C-47C9-9687-ABF25F617ED7}</Project>
       <Name>ClearCanvas.ImageViewer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\..\Configuration\ClearCanvas.ImageViewer.Configuration.csproj">
+      <Project>{89df567b-a0d1-456a-a28f-043fd57d7f9a}</Project>
+      <Name>ClearCanvas.ImageViewer.Configuration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\ClearCanvas.ImageViewer.Explorer.Local.csproj">
       <Project>{AD9F87CF-0F30-442D-ACCD-80FACC339F22}</Project>
       <Name>ClearCanvas.ImageViewer.Explorer.Local</Name>

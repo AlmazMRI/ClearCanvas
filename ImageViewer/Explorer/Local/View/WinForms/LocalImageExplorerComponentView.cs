@@ -26,6 +26,10 @@ using System.Windows.Forms;
 using ClearCanvas.Common;
 using ClearCanvas.Desktop;
 using ClearCanvas.Desktop.View.WinForms;
+using ClearCanvas.ImageViewer.StudyManagement;
+using ClearCanvas.ImageViewer.Configuration;
+using System.Collections.Generic;
+using System.IO;
 
 namespace ClearCanvas.ImageViewer.Explorer.Local.View.WinForms
 {
@@ -47,14 +51,46 @@ namespace ClearCanvas.ImageViewer.Explorer.Local.View.WinForms
 				if (_control == null)
 				{
 					_control = new LocalImageExplorerControl(_component);
-				}
+                    ((LocalImageExplorerControl)_control).DragDropGotFile += LocalImageExplorerComponentView_DragDropGotFile;
+                }
 				return _control;
 			}
 		}
 
-		#region IApplicationComponentView Members
+        // From ClearCanvas.ImageViewer.Explorer.Local.DicomImageLoaderTool
+        private string[] BuildFileList(string[] paths)
+        {
+            List<string> fileList = new List<string>();
 
-		public void SetComponent(IApplicationComponent component)
+            foreach (string path in paths)
+            {
+                if (string.IsNullOrEmpty(path))
+                    continue;
+
+                if (File.Exists(path))
+                    fileList.Add(path);
+                else if (Directory.Exists(path))
+                    fileList.AddRange(Directory.GetFiles(path, "*.*", SearchOption.AllDirectories));
+            }
+            fileList.RemoveAll(f => System.IO.Path.GetExtension(f).Equals(".xml",System.StringComparison.OrdinalIgnoreCase));
+
+            return fileList.ToArray();
+        }
+
+
+
+        private void LocalImageExplorerComponentView_DragDropGotFile(object sender, System.EventArgs e)
+        {
+            string[] files = (string[])((DragEventArgs)e).Data.GetData(DataFormats.FileDrop);
+            files = BuildFileList(files);
+            new OpenFilesHelper(files) { WindowBehaviour = ViewerLaunchSettings.WindowBehaviour }.OpenFiles();
+
+        }
+
+
+        #region IApplicationComponentView Members
+
+        public void SetComponent(IApplicationComponent component)
 		{
 			_component = component as LocalImageExplorerComponent;
 		}

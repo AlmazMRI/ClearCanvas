@@ -67,7 +67,13 @@ namespace ClearCanvas.ImageViewer.Explorer.Local.View.WinForms
 			// Initialize menus here
 			ToolStripBuilder.BuildMenu(_folderViewContextMenu.Items, _component.ContextMenuModel.ChildNodes);
 			ToolStripBuilder.BuildMenu(_folderTreeContextMenu.Items, _component.ContextMenuModel.ChildNodes);
-		}
+
+            this.AllowDrop = true;
+            this.DragEnter += new DragEventHandler(_folderView_DragEnter);
+            this.DragDrop += new DragEventHandler(_folderView_DragDrop);
+			this.DragLeave += new EventHandler(_folderView_DragLeave);
+
+        }
 
 		private void PerformDispose(bool disposing)
 		{
@@ -165,9 +171,52 @@ namespace ClearCanvas.ImageViewer.Explorer.Local.View.WinForms
 				_folderCoordinator.BrowseTo(_homeLocation);
 		}
 
-		#region Tab Order
+        private void _folderView_DragDrop(object sender, DragEventArgs e)
+        {
 
-		private delegate bool FocusDelegate(bool forward);
+
+
+            _folderView.Enabled = true;
+            EventsHelper.Fire(_DragDropGotFile, this, e);
+        }
+
+        private void _folderView_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                _folderView.Enabled = false;
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                _folderView.Enabled = true;
+                e.Effect = DragDropEffects.None;
+            }
+        }
+
+        private void _folderView_DragLeave(object sender, EventArgs e)
+		{
+            _folderView.Enabled = true;
+        }
+
+
+
+        private event EventHandler _DragDropGotFile;
+
+        public event EventHandler DragDropGotFile
+        {
+            add { _DragDropGotFile += value; }
+            remove { _DragDropGotFile -= value; }
+        }
+
+        protected virtual void onDragDropGotFile()
+        {
+            EventsHelper.Fire(_DragDropGotFile, this, EventArgs.Empty);
+        }
+
+    #region Tab Order
+
+    private delegate bool FocusDelegate(bool forward);
 
 		private IList<KeyValuePair<Control, FocusDelegate>> _focusDelegates = null;
 
